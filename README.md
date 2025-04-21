@@ -1,4 +1,4 @@
-# SignaPay Take-Home Exercise
+# SignaPay Take Home Exercise
 
 Thank you for your interest in SignaPay!
 
@@ -21,7 +21,7 @@ You’ll build a small system that mimics a simplified credit card transaction p
 - A **web-based user interface**
   - including a **reporting view** to summarize processed data
 - A **server component** with appropriate business logic
-- **Data persistence** (in-memory, file-based, or database — your choice)
+- **Data persistence** (in-memory, file-based, or database - your choice)
 
 ---
 
