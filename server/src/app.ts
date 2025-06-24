@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import { CardType } from '../generated/prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { Parser as XmlParser } from 'xml2js';
 import { js2xml } from 'xml-js';
 
@@ -98,6 +100,9 @@ export async function parseXmlContent(content: string): Promise<ParsedRecord[]> 
 export async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
 	const fileContent = file.buffer.toString('utf-8');
 
+	const allValidTransactions = [];
+	const allRejectedTransactions = [];
+
 	let records: ParsedRecord[] = [];
 	try {
 		switch (file.mimetype) {
@@ -126,11 +131,47 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 			};
 		}
 
-	console.log(records);
+	for (const record of records) {
+		let cardType: CardType | null = null;
+		if (!record.cardNumber || !record.timestamp || !record.amount) {
+			allRejectedTransactions.push({
+				originalRecord: record.originalRecord,
+				rejectionReason: 'Malformed record (missing fields)',
+			});
+			continue;
+		}
+
+		const firstDigit = record.cardNumber.charAt(0);
+		if (firstDigit === '3') cardType = CardType.AMEX;
+		else if (firstDigit === '4') cardType = CardType.VISA;
+		else if (firstDigit === '5') cardType = CardType.MASTERCARD;
+		else if (firstDigit === '6') cardType = CardType.DISCOVER;
+
+		try {
+			if (cardType) {
+				allValidTransactions.push({
+					cardNumber: record.cardNumber,
+					cardType,
+					timestamp: new Date(record.timestamp),
+					amount: new Decimal(record.amount), // new Decimal() can handle numbers directly
+				});
+			} else {
+				allRejectedTransactions.push({
+					originalRecord: record.originalRecord,
+					rejectionReason: 'Unrecognized card type',
+				});
+			}
+		} catch (e) {
+			 allRejectedTransactions.push({
+					originalRecord: record.originalRecord,
+					rejectionReason: `Invalid data format: ${(e as Error).message}`,
+				});
+		}
+	}
 
 	return {
-		processed: 0,
-		rejected: 0
+		processed: allValidTransactions.length,
+		rejected: allRejectedTransactions.length
 	}
 }
 
@@ -149,7 +190,7 @@ app.post('/api/process-transactions', upload.single('transactionFile'), async (r
 
 	try {
 		res.status(200).json({ 
-				message: 'Files processed successfully.', 
+				message: 'File processed successfully.',
 				...result
 		});
 	} catch (error) {
@@ -161,6 +202,20 @@ app.post('/api/process-transactions', upload.single('transactionFile'), async (r
 			res.status(500).json({ message: 'Failed to process transaction files.', error: 'Unknown error occurred.' });
 		}
 	}
+});
+
+app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
+	if (err.code === 'LIMIT_FILE_SIZE') {
+		res.status(413).json({ message: `File too large. Maximum size is 5MB.` });
+		return;
+	}
+
+	if (err instanceof multer.MulterError) {
+		res.status(400).json({ message: `File upload error: ${err.message}` });
+		return
+	}
+
+	next(err);
 });
 
 export { app } 
