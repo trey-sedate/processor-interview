@@ -37,6 +37,13 @@ describe('File Parsers', () => {
 			 const result = parseCsvContent(csvContent);
 			expect(result).toHaveLength(1);
 		});
+
+		it('should produce NaN for amount if it is not a number', () => {
+			const csvContent = 'cardNumber,timestamp,amount\n4242,2025-01-01T00:00:00Z,invalid-amount';
+			const result = parseCsvContent(csvContent);
+			expect(result).toHaveLength(1);
+			expect(result[0].amount).toBeNaN();
+		});
 	});
 
 	// --- JSON Parser Tests ---
@@ -66,6 +73,14 @@ describe('File Parsers', () => {
 		it('should throw an error if the top-level structure is not an array', () => {
 			const nonArrayJson = '{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}';
 			expect(() => parseJsonContent(nonArrayJson)).toThrow('JSON data is not an array of transactions');
+		});
+
+		it('should handle objects with missing keys by passing them as undefined', () => {
+			const jsonWithMissingKey = '[{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z"}]';
+			const result = parseJsonContent(jsonWithMissingKey);
+			expect(result).toHaveLength(1);
+			// The parser should pass it through; downstream validation will catch it.
+			expect(result[0].amount).toBeUndefined();
 		});
 	});
 
