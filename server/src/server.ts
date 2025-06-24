@@ -1,8 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import { Parser as XmlParser } from 'xml2js';
+import { js2xml } from 'xml-js';
 
 const app = express();
+const xmlParser = new XmlParser({ explicitArray: false });
 const PORT = process.env.PORT || 5001;
 
 // Configure multer for in-memory file storage
@@ -39,7 +42,7 @@ interface ProcessResult {
 interface ParsedRecord {
   cardNumber: string;
   timestamp: string;
-  amount: string;
+  amount: number;
   originalRecord: string; // Used for logging rejections
 }
 
@@ -50,10 +53,34 @@ function parseCsvContent(content: string): ParsedRecord[] {
 	for (const line of lines) {
 			if (line.trim() === '') continue;
 			const [cardNumber, timestamp, amount] = line.trim().split(',');
-			records.push({ cardNumber, timestamp, amount, originalRecord: line });
+			records.push({ cardNumber, timestamp, amount: parseFloat(amount), originalRecord: line });
 	}
 
 	return records;
+}
+
+function parseJsonContent(content: string): ParsedRecord[] {
+	const data = JSON.parse(content);
+	if (!Array.isArray(data)) {
+			throw new Error('JSON data is not an array of transactions');
+	}
+	return data.map(item => ({
+			...item,
+			originalRecord: JSON.stringify(item)
+	}));
+}
+
+async function parseXmlContent(content: string): Promise<ParsedRecord[]> {
+	const data = await xmlParser.parseStringPromise(content);
+	// Ensure transactions.transaction is an array, even if there's only one
+	const transactions = Array.isArray(data.transactions.transaction)
+			? data.transactions.transaction
+			: [data.transactions.transaction];
+
+	return transactions.map((item: any) => ({
+			...item,
+			originalRecord: js2xml({ transaction: item }, { compact: true, spaces: 2 })
+	}));
 }
 
 async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
@@ -63,6 +90,13 @@ async function processUploadedFile(file: Express.Multer.File): Promise<ProcessRe
 	switch (file.mimetype) {
 		case 'text/csv':
 				records = parseCsvContent(fileContent);
+				break;
+		case 'application/json':
+				records = parseJsonContent(fileContent);
+				break;
+		case 'text/xml':
+		case 'application/xml':
+				records = await parseXmlContent(fileContent);
 				break;
 	}
 
