@@ -87,5 +87,57 @@ describe('API Integration Tests', () => {
 			expect(response.body.rejected).toBe(1);
 		});
 
+		it('should correctly process a file with mixed valid and invalid records', async () => {
+			const mixedContent = 'cardNumber,timestamp,amount\n' +
+													 '4111111111111111,2025-01-01T00:00:00Z,100.00\n' + // Valid Visa
+													 '9999999999999999,2025-01-02T00:00:00Z,200.00';   // Invalid card type
+
+			const response = await request(app)
+				.post('/api/process-transactions')
+				.set('x-api-key', apiKey)
+				.attach('transactionFile', Buffer.from(mixedContent), {
+					filename: 'mixed.csv',
+					contentType: 'text/csv'
+				});
+
+			expect(response.status).toBe(200);
+			expect(response.body.processed).toBe(1);
+			expect(response.body.rejected).toBe(1);
+		});
+
+		it('should reject a record with an invalid data format (e.g., non-numeric amount)', async () => {
+			const badData = 'cardNumber,timestamp,amount\n' +
+											'5111111111111111,2025-01-01T00:00:00Z,NOT_A_NUMBER';
+
+			const response = await request(app)
+				.post('/api/process-transactions')
+				.set('x-api-key', apiKey)
+				.attach('transactionFile', Buffer.from(badData), {
+					filename: 'baddata.csv',
+					contentType: 'text/csv'
+				});
+
+			expect(response.status).toBe(200);
+			expect(response.body.processed).toBe(0);
+			expect(response.body.rejected).toBe(1);
+		});
+
+		it('should return 413 if the uploaded file is too large', async () => {
+			// Create a buffer larger than the 5MB limit
+			// Mock Multer in case we want to put this in a cloud pipeline with resource constraints
+			const largeBuffer = Buffer.alloc(6 * 1024 * 1024);
+
+			const response = await request(app)
+				.post('/api/process-transactions')
+				.set('x-api-key', apiKey)
+				.attach('transactionFile', largeBuffer, {
+					filename: 'largefile.bin',
+					contentType: 'application/octet-stream'
+				});
+
+			expect(response.status).toBe(413);
+			expect(response.body.message).toContain('File too large');
+		});
+
 	});
 });
