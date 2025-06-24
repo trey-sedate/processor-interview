@@ -38,8 +38,6 @@ const protectWithApiKey = (req: Request, res: Response, next: NextFunction): voi
 	}
 };
 
-app.use('/', protectWithApiKey);
-
 interface ProcessResult {
 	processed: number,
 	rejected: number
@@ -175,11 +173,10 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 	}
 }
 
-app.get('/', (req: Request, res: Response) => {
-		res.send('Card Processor API is running...');
-});
+const apiRouter = express.Router();
+apiRouter.use(protectWithApiKey);
 
-app.post('/api/process-transactions', upload.single('transactionFile'), async (req: Request, res: Response): Promise<void> => {
+apiRouter.post('/process-transactions', upload.single('transactionFile'), async (req: Request, res: Response): Promise<void> => {
 	const file = req.file;
 	if (!file) {
 		res.status(400).json({ message: 'No file uploaded.'});
@@ -203,6 +200,8 @@ app.post('/api/process-transactions', upload.single('transactionFile'), async (r
 		}
 	}
 });
+
+app.use('/api', apiRouter);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
 	if (err.code === 'LIMIT_FILE_SIZE') {
