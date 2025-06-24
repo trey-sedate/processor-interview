@@ -99,18 +99,32 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 	const fileContent = file.buffer.toString('utf-8');
 
 	let records: ParsedRecord[] = [];
-	switch (file.mimetype) {
-		case 'text/csv':
-				records = parseCsvContent(fileContent);
-				break;
-		case 'application/json':
-				records = parseJsonContent(fileContent);
-				break;
-		case 'text/xml':
-		case 'application/xml':
-				records = await parseXmlContent(fileContent);
-				break;
-	}
+	try {
+		switch (file.mimetype) {
+			case 'text/csv':
+					records = parseCsvContent(fileContent);
+					break;
+			case 'application/json':
+					records = parseJsonContent(fileContent);
+					break;
+			case 'text/xml':
+			case 'application/xml':
+					records = await parseXmlContent(fileContent);
+					break;
+			default:
+					// If the file type is unsupported, create a single rejection and stop.
+					return {
+							processed: 0,
+							rejected: 1
+					};
+				}
+		} catch (e) {
+			// If parsing fails, create a single rejection for the whole file.
+			return {
+				processed: 0,
+				rejected: 1
+			};
+		}
 
 	console.log(records);
 
