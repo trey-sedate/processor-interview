@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 
 const app = express();
@@ -6,6 +6,25 @@ const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
+
+const protectWithApiKey = (req: Request, res: Response, next: NextFunction): void => {
+	const apiKey = req.headers['x-api-key'];
+	const serverApiKey = process.env.API_SECRET_KEY;
+
+	if (!serverApiKey) {
+		console.error("FATAL: API_SECRET_KEY is not set on the server.");
+		res.status(500).json({ message: "Server configuration error." });
+		return;
+	}
+
+	if (apiKey && apiKey === serverApiKey) {
+		next();
+	} else {
+		res.status(401).json({ message: 'Unauthorized: Missing or invalid API key.' });
+	}
+};
+
+app.use('/', protectWithApiKey);
 
 app.get('/', (req: Request, res: Response) => {
 		res.send('Card Processor API is running...');
