@@ -36,17 +36,37 @@ interface ProcessResult {
 	rejected: number
 }
 
+interface ParsedRecord {
+  cardNumber: string;
+  timestamp: string;
+  amount: string;
+  originalRecord: string; // Used for logging rejections
+}
+
+function parseCsvContent(content: string): ParsedRecord[] {
+	const lines = content.split('\n').slice(1); // Skip header row
+	const records: ParsedRecord[] = [];
+
+	for (const line of lines) {
+			if (line.trim() === '') continue;
+			const [cardNumber, timestamp, amount] = line.trim().split(',');
+			records.push({ cardNumber, timestamp, amount, originalRecord: line });
+	}
+
+	return records;
+}
+
 async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
 	const fileContent = file.buffer.toString('utf-8');
 
-	// Assume CSV for now
-	const lines = fileContent.split('\n').slice(1); // Skip header row
-
-	for (const line of lines) {
-		if (line.trim() === '') continue;
-
-		console.log(line);
+  let records: ParsedRecord[] = [];
+	switch (file.mimetype) {
+		case 'text/csv':
+				records = parseCsvContent(fileContent);
+				break;
 	}
+
+	console.log(records);
 
 	return {
 		processed: 0,
