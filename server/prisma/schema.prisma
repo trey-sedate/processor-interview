@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum CardType {
+  AMEX
+  VISA
+  MASTERCARD
+  DISCOVER
+}
+
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  cardNumber String
+  cardType   CardType
+  timestamp  DateTime
+  amount     Decimal
+
+  @@index([cardType])
+  @@index([timestamp])
+}
+
+model RejectedTransaction {
+  id              Int      @id @default(autoincrement())
+  originalRecord  String
+  rejectionReason String
+  processedAt     DateTime @default(now())
+}
