@@ -1,12 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { CardType } from '../generated/prisma/client';
+import { PrismaClient, CardType } from '../generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Parser as XmlParser } from 'xml2js';
 import { js2xml } from 'xml-js';
 
 const app = express();
+const prisma = new PrismaClient();
 const xmlParser = new XmlParser({ explicitArray: false });
 
 // Configure multer for in-memory file storage
@@ -165,6 +166,13 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 					rejectionReason: `Invalid data format: ${(e as Error).message}`,
 				});
 		}
+	}
+
+	if (allValidTransactions.length > 0) {
+		await prisma.transaction.createMany({ data: allValidTransactions });
+	}
+	if (allRejectedTransactions.length > 0) {
+		await prisma.rejectedTransaction.createMany({ data: allRejectedTransactions });
 	}
 
 	return {
