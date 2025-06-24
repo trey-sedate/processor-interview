@@ -1,8 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import multer from 'multer';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Configure multer for in-memory file storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(cors());
 app.use(express.json());
@@ -26,14 +31,46 @@ const protectWithApiKey = (req: Request, res: Response, next: NextFunction): voi
 
 app.use('/', protectWithApiKey);
 
+interface ProcessResult {
+	processed: number,
+	rejected: number
+}
+
+async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
+	const fileContent = file.buffer.toString('utf-8');
+
+	// Assume CSV for now
+	const lines = fileContent.split('\n').slice(1); // Skip header row
+
+	for (const line of lines) {
+		if (line.trim() === '') continue;
+
+		console.log(line);
+	}
+
+	return {
+		processed: 0,
+		rejected: 0
+	}
+}
+
 app.get('/', (req: Request, res: Response) => {
 		res.send('Card Processor API is running...');
 });
 
-app.post('/api/process-transactions', async (req: Request, res: Response) => {
+app.post('/api/process-transactions', upload.single('transactionFile'), async (req: Request, res: Response): Promise<void> => {
+	const file = req.file;
+	if (!file) {
+		res.status(400).json({ message: 'No file uploaded.'});
+		return;
+	}
+
+	const result = await processUploadedFile(file);
+
 	try {
 		res.status(200).json({ 
 				message: 'Files processed successfully.', 
+				...result
 		});
 	} catch (error) {
 		if (error instanceof Error) {
