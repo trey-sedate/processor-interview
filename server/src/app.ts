@@ -9,7 +9,12 @@ const xmlParser = new XmlParser({ explicitArray: false });
 
 // Configure multer for in-memory file storage
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({
+	storage: storage,
+	limits: {
+		fileSize: 5 * 1024 * 1024, // 5 MB limit per file
+	}
+});
 
 app.use(cors());
 app.use(express.json());
@@ -39,10 +44,10 @@ interface ProcessResult {
 }
 
 interface ParsedRecord {
-  cardNumber: string;
-  timestamp: string;
-  amount: number;
-  originalRecord: string; // Used for logging rejections
+	cardNumber: string;
+	timestamp: string;
+	amount: number;
+	originalRecord: string; // Used for logging rejections
 }
 
 export function parseCsvContent(content: string): ParsedRecord[] {
@@ -93,7 +98,7 @@ export async function parseXmlContent(content: string): Promise<ParsedRecord[]> 
 export async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
 	const fileContent = file.buffer.toString('utf-8');
 
-  let records: ParsedRecord[] = [];
+	let records: ParsedRecord[] = [];
 	switch (file.mimetype) {
 		case 'text/csv':
 				records = parseCsvContent(fileContent);
