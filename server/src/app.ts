@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { PrismaClient, CardType } from '../generated/prisma/client';
+import { PrismaClient, CardType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Parser as XmlParser } from 'xml2js';
 import { js2xml } from 'xml-js';
@@ -117,6 +117,12 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 					break;
 			default:
 					// If the file type is unsupported, create a single rejection and stop.
+					await prisma.rejectedTransaction.create({
+						data: {
+								originalRecord: `File: ${file.originalname}`,
+								rejectionReason: `Unsupported file type: ${file.mimetype}`,
+						}
+					});
 					return {
 							processed: 0,
 							rejected: 1
@@ -124,6 +130,12 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 				}
 		} catch (e) {
 			// If parsing fails, create a single rejection for the whole file.
+			await prisma.rejectedTransaction.create({
+				data: {
+						originalRecord: `File: ${file.originalname}`,
+						rejectionReason: `Failed to parse file: ${(e as Error).message}`,
+				}
+			});
 			return {
 				processed: 0,
 				rejected: 1
@@ -185,15 +197,15 @@ const apiRouter = express.Router();
 apiRouter.use(protectWithApiKey);
 
 apiRouter.post('/process-transactions', upload.single('transactionFile'), async (req: Request, res: Response): Promise<void> => {
-	const file = req.file;
-	if (!file) {
-		res.status(400).json({ message: 'No file uploaded.'});
-		return;
-	}
-
-	const result = await processUploadedFile(file);
-
 	try {
+		const file = req.file;
+		if (!file) {
+			res.status(400).json({ message: 'No file uploaded.'});
+			return;
+		}
+
+		const result = await processUploadedFile(file);
+
 		res.status(200).json({ 
 				message: 'File processed successfully.',
 				...result
