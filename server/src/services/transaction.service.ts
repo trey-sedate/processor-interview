@@ -7,6 +7,11 @@ import { parseXmlContent } from '../parsers/xml.parser';
 
 const prisma = new PrismaClient();
 
+export async function resetData() {
+	await prisma.transaction.deleteMany({});
+	await prisma.rejectedTransaction.deleteMany({});
+}
+
 export async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
 	const parser = getParserForMimeType(file.mimetype);
 	if (!parser) {

@@ -25,3 +25,12 @@ export const processTransactions = async (req: Request, res: Response): Promise<
 		}
 	}
 };
+
+export const resetDatabase = async (req: Request, res: Response): Promise<void> => {
+	try {
+			await TransactionService.resetData();
+			res.status(200).json({ message: 'Database reset successfully.' });
+	} catch (error) {
+			res.status(500).json({ message: 'Failed to reset database.', error: (error as Error).message });
+	}
+};
