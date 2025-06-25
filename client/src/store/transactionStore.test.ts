@@ -25,4 +25,10 @@ describe('useTransactionStore', () => {
 		useTransactionStore.getState().setProcessResult(result);
 		expect(useTransactionStore.getState().processResult).toEqual(result);
 	});
+
+	it('should set rejected transactions', () => {
+		const mockRejected = [{ id: 1, originalRecord: 'a,b,c', rejectionReason: 'test', processedAt: '' }];
+		useTransactionStore.getState().setRejectedTransactions(mockRejected);
+		expect(useTransactionStore.getState().rejectedTransactions).toEqual(mockRejected);
+	});
 });

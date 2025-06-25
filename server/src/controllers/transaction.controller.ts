@@ -34,3 +34,12 @@ export const resetDatabase = async (req: Request, res: Response): Promise<void> 
 			res.status(500).json({ message: 'Failed to reset database.', error: (error as Error).message });
 	}
 };
+
+export const getRejectedTransactions = async (req: Request, res: Response): Promise<void> => {
+	try {
+			const rejected = await TransactionService.getRejected();
+			res.status(200).json(rejected);
+	} catch (error) {
+			res.status(500).json({ message: 'Failed to retrieve rejected transactions.', error: (error as Error).message });
+	}
+};

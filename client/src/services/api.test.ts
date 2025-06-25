@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { processFile } from './api';
+import { processFile, getRejectedTransactions } from './api';
 
 global.fetch = vi.fn();
 
@@ -12,7 +12,6 @@ describe('api service', () => {
 		const mockFile = new File(['test'], 'test.csv', { type: 'text/csv' });
 		const mockApiKey = 'test-key';
 		
-		// Setup the mock response
 		(fetch as vi.Mock).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve({ processed: 1, rejected: 0 }),
@@ -20,13 +19,25 @@ describe('api service', () => {
 
 		await processFile(mockFile, mockApiKey);
 
-		// Check that fetch was called
 		expect(fetch).toHaveBeenCalledTimes(1);
 		
-		// Check the URL
 		expect(fetch).toHaveBeenCalledWith(
 				'http://localhost:5001/api/process-transactions',
 				expect.anything() // We don't need to check the full options object here
+		);
+	});
+
+	it('getRejectedTransactions should call the correct endpoint', async () => {
+		(fetch as vi.Mock).mockResolvedValue({
+			ok: true,
+			json: () => Promise.resolve([]),
+		});
+
+		await getRejectedTransactions('test-key');
+		
+		expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:5001/api/reporting/rejected-transactions',
+				expect.anything()
 		);
 	});
 });

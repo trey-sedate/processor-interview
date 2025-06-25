@@ -12,7 +12,15 @@ export async function resetData() {
 	await prisma.rejectedTransaction.deleteMany({});
 }
 
+export async function getRejected() {
+	return prisma.rejectedTransaction.findMany({
+			orderBy: { processedAt: 'desc' }
+	});
+}
+
 export async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
+	await resetData();
+
 	const parser = getParserForMimeType(file.mimetype);
 	if (!parser) {
 		await prisma.rejectedTransaction.create({

@@ -7,7 +7,7 @@ export function Sidebar() {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || '');
 
-	const { setLoading, setError, setProcessResult } = useTransactionStore();
+	const { setLoading, setError, setProcessResult, setRejectedTransactions } = useTransactionStore();
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
@@ -24,10 +24,17 @@ export function Sidebar() {
 		setLoading(true);
 		setError(null);
 		setProcessResult(null);
+		setRejectedTransactions([]);
 
 		try {
 			const result = await api.processFile(selectedFile, apiKey);
 			setProcessResult(result);
+
+			if (result.rejected > 0) {
+				const rejected = await api.getRejectedTransactions(apiKey);
+				setRejectedTransactions(rejected);
+			}
+
 		} catch (err) {
 			setError((err as Error).message);
 		} finally {

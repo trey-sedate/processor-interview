@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { processTransactions, resetDatabase } from '../controllers/transaction.controller';
+import { processTransactions, resetDatabase, getRejectedTransactions } from '../controllers/transaction.controller';
 
 // Configure multer for in-memory file storage
 const storage = multer.memoryStorage();
@@ -15,5 +15,6 @@ const router = Router();
 
 router.post('/process-transactions', upload.single('transactionFile'), processTransactions);
 router.delete('/reset', resetDatabase);
+router.get('/reporting/rejected-transactions', getRejectedTransactions);
 
 export default router;

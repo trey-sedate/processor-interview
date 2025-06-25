@@ -1,4 +1,4 @@
-import type { ProcessResult } from '../types';
+import type { ProcessResult, RejectedTransaction } from '../types';
 
 const API_URL = 'http://localhost:5001/api';
 
@@ -21,4 +21,16 @@ export async function processFile(file: File, apiKey: string): Promise<ProcessRe
 		processed: data.processed,
 		rejected: data.rejected
 	};
+}
+
+export async function getRejectedTransactions(apiKey: string): Promise<RejectedTransaction[]> {
+	const response = await fetch(`${API_URL}/reporting/rejected-transactions`, {
+			headers: { 'x-api-key': apiKey },
+	});
+
+	if (!response.ok) {
+			throw new Error('Failed to fetch rejected transactions.');
+	}
+
+	return response.json();
 }
