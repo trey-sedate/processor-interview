@@ -1,4 +1,6 @@
-import { parseCsvContent, parseJsonContent, parseXmlContent } from '../app'; // Adjust to your file structure
+import { parseCsvContent } from '../parsers/csv.parser'
+import { parseJsonContent } from '../parsers/json.parser'
+import { parseXmlContent } from '../parsers/xml.parser'
 
 describe('File Parsers', () => {
 
