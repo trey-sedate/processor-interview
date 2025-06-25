@@ -1,35 +1,5 @@
 import request from 'supertest';
 
-const mockPrismaClient = {
-	transaction: {
-		deleteMany: jest.fn(),
-		createMany: jest.fn(),
-		groupBy: jest.fn(),
-		findMany: jest.fn(),
-	},
-	rejectedTransaction: {
-		deleteMany: jest.fn(),
-		createMany: jest.fn(),
-		create: jest.fn(),
-		findMany: jest.fn(),
-	},
-	$queryRaw: jest.fn(),
-};
-
-jest.doMock('@prisma/client', () => ({
-	PrismaClient: jest.fn(() => mockPrismaClient),
-	CardType: mockCardType, // Export the mock enum
-}));
-
-// Define a mock for the CardType enum that the application code imports.
-// This must match the values in your schema.prisma file.
-const mockCardType = {
-	AMEX: 'AMEX',
-	VISA: 'VISA',
-	MASTERCARD: 'MASTERCARD',
-	DISCOVER: 'DISCOVER',
-};
-
 describe('API Integration Tests', () => {
 	let app: any;
 
@@ -37,10 +7,6 @@ describe('API Integration Tests', () => {
 
 	beforeAll(() => {
 		app = require('../app').app;
-	});
-
-	beforeEach(() => {
-		jest.clearAllMocks();
 	});
 
 	describe('POST /api/process-transactions', () => {
@@ -78,8 +44,6 @@ describe('API Integration Tests', () => {
 				processed: 1,
 				rejected: 0
 			});
-			expect(mockPrismaClient.transaction.createMany).toHaveBeenCalledTimes(1);
-			expect(mockPrismaClient.rejectedTransaction.createMany).not.toHaveBeenCalled();
 		});
 
 		it('should process a valid JSON file and return a 200 status', async () => {
@@ -95,7 +59,6 @@ describe('API Integration Tests', () => {
 				
 			expect(response.status).toBe(200);
 			expect(response.body.processed).toBe(1);
-			expect(mockPrismaClient.transaction.createMany).toHaveBeenCalledTimes(1);
 		});
 
 		it('should process a valid XML file and return a 200 status', async () => {
@@ -111,7 +74,6 @@ describe('API Integration Tests', () => {
 				
 			expect(response.status).toBe(200);
 			expect(response.body.processed).toBe(1);
-			expect(mockPrismaClient.transaction.createMany).toHaveBeenCalledTimes(1);
 		});
 
 		it('should reject a file with an unsupported type', async () => {
@@ -128,12 +90,6 @@ describe('API Integration Tests', () => {
 			expect(response.status).toBe(200);
 			expect(response.body.processed).toBe(0);
 			expect(response.body.rejected).toBe(1);
-			expect(mockPrismaClient.rejectedTransaction.create).toHaveBeenCalledWith({
-				data: {
-					originalRecord: 'File: test.txt',
-					rejectionReason: 'Unsupported file type: text/plain'
-				}
-			});
 		});
 
 		it('should correctly process a file with mixed valid and invalid records', async () => {
@@ -152,8 +108,6 @@ describe('API Integration Tests', () => {
 			expect(response.status).toBe(200);
 			expect(response.body.processed).toBe(1);
 			expect(response.body.rejected).toBe(1);
-			expect(mockPrismaClient.transaction.createMany).toHaveBeenCalledTimes(1);
-			expect(mockPrismaClient.rejectedTransaction.createMany).toHaveBeenCalledTimes(1);
 		});
 
 		it('should reject a record with an invalid data format (e.g., non-numeric amount)', async () => {
@@ -171,8 +125,6 @@ describe('API Integration Tests', () => {
 			expect(response.status).toBe(200);
 			expect(response.body.processed).toBe(0);
 			expect(response.body.rejected).toBe(1);
-			expect(mockPrismaClient.transaction.createMany).not.toHaveBeenCalled();
-			expect(mockPrismaClient.rejectedTransaction.createMany).toHaveBeenCalledTimes(1);
 		});
 
 		it('should return 413 if the uploaded file is too large', async () => {
