@@ -6,6 +6,7 @@ import * as api from '../services/api';
 export function Sidebar() {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || '');
+	const [fileError, setFileError] = useState<string | null>(null);
 
 	const { setLoading, setError, setProcessResult, 
 		setRejectedTransactions, setCardTypeSummary, setDailySummary, setCardSummary
@@ -13,7 +14,10 @@ export function Sidebar() {
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
-			setSelectedFile(event.target.files[0]);
+			const file = event.target.files[0];
+
+			setFileError(null); // Clear any previous errors
+			setSelectedFile(file);
 		}
 	};
 
@@ -33,10 +37,10 @@ export function Sidebar() {
 			setProcessResult(result);
 
 			const [cardTypeData, dailyData, cardData, rejected] = await Promise.all([
-				api.getCardTypeReport(apiKey),
-				api.getDailyReport(apiKey),
-				api.getCardReport(apiKey),
-				result.rejected > 0 ? api.getRejectedTransactions(apiKey) : Promise.resolve([]),
+					api.getCardTypeReport(apiKey),
+					api.getDailyReport(apiKey),
+					api.getCardReport(apiKey),
+					result.rejected > 0 ? api.getRejectedTransactions(apiKey) : Promise.resolve([]),
 			]);
 
 			setCardTypeSummary(cardTypeData);
@@ -52,13 +56,13 @@ export function Sidebar() {
 	};
 
 	return (
-		<div>
-			<Title>Card Processor</Title>
-			<Text>Upload a file to begin.</Text>
-			
-			<Card className="mt-6">
-				<h3 className="text-lg font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">Process New File</h3>
-				<div className="mt-4 space-y-4">
+			<div>
+				<Title>Card Processor</Title>
+				<Text>Upload a file to begin.</Text>
+				
+				<Card className="mt-6">
+					<h3 className="text-lg font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">Process New File</h3>
+					<div className="mt-4 space-y-4">
 						<input
 								type="text"
 								placeholder="API Key"
@@ -71,15 +75,21 @@ export function Sidebar() {
 								onChange={handleFileChange}
 								className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
 						/>
+						{fileError && (
+								<p className="text-sm text-red-600">{fileError}</p>
+						)}
 						<button
 								onClick={handleProcess}
-								// disabled={isLoading || !selectedFile || !apiKey}
+								disabled={!selectedFile || !apiKey}
 								className="w-full px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-full shadow-sm hover:bg-violet-700 disabled:bg-slate-300"
 						>
 								Process File
 						</button>
-				</div>
-			</Card>
-		</div>
+						<p className="text-sm text-gray-500 mt-2">
+								Files must be less than 5 MB and in CSV, JSON, or XML format.
+						</p>
+					</div>
+				</Card>
+			</div>
 	);
 }

@@ -27,14 +27,21 @@ function App() {
 					) : (
 					<>
 							<div className="grid grid-cols-1 2xl:grid-cols-6 gap-4">
-									<div className="2xl:col-span-2">
+									{/* ResultsSummary */}
+									<div className="col-span-1 2xl:col-span-6">
 											<ResultsSummary />
 									</div>
-									<div className="2xl:col-span-4">
-											<TransactionTabs />
+
+									{/* ReportGrid */}
+									<div className="col-span-1 2xl:col-span-6">
+											<ReportGrid />
 									</div>
 							</div>
-							<ReportGrid />
+
+							{/* TransactionTabs */}
+							<div className="mt-6">
+									<TransactionTabs />
+							</div>
 					</>
 			)
 			}
