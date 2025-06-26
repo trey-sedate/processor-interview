@@ -1,104 +1,101 @@
-# Card Processor
+# Card Transaction Processor 
+This project is a full-stack web application that processes credit card transaction files, persists the data, and displays summary reports on a web-based dashboard. It was built as a take-home assignment to demonstrate skills in modern web development, including backend architecture, frontend UI/UX, and testing.
 
-Thank you for taking a the time to complete our interview code project. We realize that there are many ways to conduct the "technical part" of the interview process from L33T code tests to whiteboards, and each has its own respective pros / cons. We intentionally chose the take-home project approach because we believe it gives you the best chance to demonstrate your skills and knowledge in a "normal environment" - i.e. your computer, keyboard, and IDE.
+## Tech Stack
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: SQLite with Prisma ORM
+- **Frontend**: React (with Vite), TypeScript
+- **UI Library**: Tremor
+- **State Management**: Zustand
+- **Testing**: Jest & Supertest (Backend), Vitest & React Testing Library (Frontend)
 
-This short exercise is designed to give us a sense of how you approach full stack development. We’re looking for clarity of thought, communication, and code organization — not perfection or a complete product.
+## Getting Started
+Follow these instructions to get the project running locally for development and testing.
 
-Please treat this as something you’d spend **3-5 hours** on. If anything is unclear or you'd make a different decision in a real-world scenario, feel free to call that out.
+### Prerequisites
+- Node.js (v20 or later recommended)
+- npm
 
-We encourage you to have fun with the project, while producing a solution that you believe accurately represents how you would bring your skillset to the team.
+### Server Setup
+1. **Navigate to the server directory:**
 
-We have attempted to make this repo as clear as possible, but if you have any questions, we encourage you to reach out.
+```
+cd server
+```
 
----
+2. **Install dependencies:**
 
-## 📟 Overview
+```
+npm install
+```
 
-You’ll build a small system that mimics a simplified credit card transaction processor. Your submission should include:
+3. **Create an environment file:** Create a `.env` file in the `server` directory and add the following variables. This file should not be committed to version control.
 
-- A **web-based user interface**
-  - including a **reporting view** to summarize processed data
-- A **server component** with appropriate business logic
-- **Data persistence** (in-memory, file-based, or database - your choice)
+```
+# The path to your SQLite database file
+DATABASE_URL="file:./dev.db"
 
----
+# A secret key for protecting API endpoints
+API_SECRET_KEY="your-super-secret-api-key-here"
+```
 
-## 🧹 Requirements
+4. **Run database migrations:** This will create the `dev.db` database file and the necessary tables.
 
-You can implement this however you like, as long as the following functionality is covered:
+```
+npx prisma migrate dev
+```
 
-### 1. User Interface
+5. **Start the development server:**
 
-- A minimal web interface for interacting with the system
-- Includes a way to view and/or submit transaction data
-- Can be built using any approach / tech stack you prefer
+```
+npm run dev
+```
 
-### 2. Logic
+The server will be running on `http://localhost:5001`.
 
-- You need to accept transaction records
-  - These records will come from the provided files
-  - The files in the test directory are smaller and meant to ease development
-  - The files in the data directory are larger and mean to be the "real transactions"
-- Each record includes a card number, timestamp, and amount
-- Each directory contains 3 files that need to be processed to capture all transactions
-- Card type is determined by the leading character of the card as follows:
-  - Amex (3)
-  - Visa (4)
-  - MasterCard (5)
-  - Discover (6)
-- Invalid or unrecognized card numbers should be rejected
+### Client Setup
+1. **Open a new terminal window** and navigate to the client directory:
 
-### 3. Persistence
+```
+cd client
+```
 
-- Transactions must be stored and retrievable after creation
-- Choose any persistence mechanism
+2. **Install dependencies:**
 
-### 4. Reporting
+```
+npm install
+```
 
-- Provide summaries of total processed volume:
-  - By Card
-  - By Card Type
-  - By Day (based on timestamp)
-- Provide a list of "rejected" transactions
+3. **Create an environment file:** Create a `.env.local` file in the `client` directory. Vite requires variables to be prefixed with `VITE_` to expose them to the application. Use the same key you defined in the server's `.env` file.
 
----
+```
+VITE_API_KEY="your-super-secret-api-key-here"
+```
 
-## ✅ What We’re Looking For
+4. **Start the development server:**
 
-- Clear, maintainable code
-- A working implementation of the core requirements
-- Reasonable structure and organization
-- Good judgment in scoping and tradeoffs
+```
+npm run dev
+```
 
-Bonus points (not required) for:
+The client will be running on **http://localhost:5173** and will open automatically in your browser.
 
-- Tests
-- Clear commit history
-- Clean and responsive UI
+## Architectural Decisions & Tradeoffs
 
-## 🧠 Final Thoughts and Hints
+1. **Backend:** Node.js, Express & Prisma ORM
+- Decision: A custom Node.js/Express server was chosen over a Backend-as-a-Service (BaaS) like Supabase.
+- **Justification:** While a BaaS is excellent for rapid prototyping, the assignment specifically asks for a "server component with appropriate business logic." Building the server from scratch better demonstrates an understanding of backend architecture, API design, and clean separation of concerns (Routes, Controllers, Services).
+- **Persistence:** SQLite was chosen as the database for its simplicity and file-based nature, which eliminates the need for a separate database server and makes the project easy for a reviewer to set up. Prisma was chosen as the ORM for its excellent type safety and developer experience.
 
-- In this scenario, you are the initial architect creating the first pass at this project. You can consider our review the same as a Senior level engineer coming on to the project. Make sure that when we "pick up" the repo, it is clear how to stand up the project, run the solution, and potentially contribute code
-- Since you are tackling this specific project, our expectation is that you are at a senior engineer level. While we 100% want your code to represent your preferred style, there are some things we consider "basic" that should be in your submission. These include ideas like the following list. This list is not exhaustive, it is meant to point in a direction:
-  - Clear, consistent, readable code
-  - Proper use of your selected stack
-    - for example, if you choose C#, we would expect to see IOC/DI appropriately implemented
-  - DRY
-  - Low cyclomatic complexity
-  - Low Coupling / High Cohesion
-  - Clear thought and patterns for maintainability and expansion
-    - This scenario is obviously simplified from reality, that said you should consider future requests like other transaction types, different file formats, etc. - this will at minimum, be a topic in the conversation
-- While it should be obvious, this scenario involves "money". This means numerical accuracy is required and at least minimal security should be considered in your submission (we aren't going to "hack your solution", but there shouldn't be open API endpoints either).
-- We do NOT expect you to be a designer, we do expect you to consider your user and make the experience intuitive and easy to use
+2. **Frontend: File Uploader vs. Direct File System Access**
+- **Decision:** The application uses a web-based file uploader instead of having the server read directly from the /data directory specified in the prompt.
+- **Justification:** This was a deliberate design tradeoff. Building a file uploader creates a more interactive, realistic, and secure web application, which better showcases frontend development skills. The core parsing and validation logic in the service layer remains independent and could easily be re-purposed to read from a local directory if the requirements were to change.
 
----
+3. **UI: Tremor Component Library**
+- **Decision:** The Tremor library was selected for the frontend UI.
+- **Justification:** The core of the UI requirement is a "reporting view." Tremor is a library specifically designed for building dashboards and analytics interfaces. Choosing a purpose-built tool allowed for the rapid development of a professional, cohesive, and visually appealing dashboard, demonstrating good judgment in selecting the right tool for the job.
 
-## 📦 Submitting
+## Assumptions & Known Limitations
+- **Single File Processing:** The UI is designed to process one file at a time. The results of a new file upload will overwrite the previous results. The application does not currently support aggregating data from multiple separate uploads.
 
-- Fork this repository and push your implementation to your fork
-- Submit a pr to this repository when you are ready for us to review your code
-  - We will close the PR then review the code on your fork
-- Include / Update `README.md` to explain:
-  - How to run your code
-  - Any decisions or tradeoffs you made
-  - Any assumptions or known limitations
+- **No User Authentication:** The application does not have a user login system. It uses a simple secret API key to protect the API endpoints, which is appropriate for its scope.
