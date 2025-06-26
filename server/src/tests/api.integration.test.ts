@@ -19,7 +19,8 @@ describe('API Integration Tests', () => {
 		it('should return 400 if no file is uploaded (with valid API key)', async () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
-				.set('x-api-key', apiKey);
+				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true');
 
 			expect(response.status).toBe(400);
 			expect(response.body.message).toBe('No file uploaded.');
@@ -33,6 +34,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', csvBuffer, {
 					filename: 'test.csv',
 					contentType: 'text/csv',
@@ -54,6 +56,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', jsonBuffer, {
 					filename: 'test.json',
 					contentType: 'application/json',
@@ -71,6 +74,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', xmlBuffer, {
 					filename: 'test.xml',
 					contentType: 'text/xml',
@@ -86,6 +90,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', txtBuffer, {
 					filename: 'test.txt',
 					contentType: 'text/plain',
@@ -105,6 +110,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', Buffer.from(mixedContent), {
 					filename: 'mixed.csv',
 					contentType: 'text/csv',
@@ -123,6 +129,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', Buffer.from(badData), {
 					filename: 'baddata.csv',
 					contentType: 'text/csv',
@@ -141,6 +148,7 @@ describe('API Integration Tests', () => {
 			const response = await request(app)
 				.post('/api/process-transactions')
 				.set('x-api-key', apiKey)
+				.field('skipLuhn', 'true')
 				.attach('transactionFile', largeBuffer, {
 					filename: 'largefile.bin',
 					contentType: 'application/octet-stream',
