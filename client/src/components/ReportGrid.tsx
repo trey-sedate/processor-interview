@@ -1,4 +1,4 @@
-import { AreaChart, Card, Col, Grid, Title, BarChart, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell } from '@tremor/react';
+import { AreaChart, Card, Title, BarChart, Table, TableHead, TableRow, TableHeaderCell, TableBody, TableCell } from '@tremor/react';
 import { useTransactionStore } from '../store/transactionStore';
 
 const currencyFormatter = (value: number) => `$${Intl.NumberFormat('us').format(value).toString()}`;
@@ -9,9 +9,9 @@ export function ReportGrid() {
 		if (!processResult) return null;
 
 		return (
-				<Grid numItemsMd={4} numItemsLg={4} className="gap-6 mt-6 items-stretch">
+				<div className="grid grid-cols-1 2xl:grid-cols-6 gap-6 mt-6">
 						{/* Volume by Card Type */}
-						<Col numColSpanMd={1} numColSpanLg={1}>
+						<div className="2xl:col-span-2">
 								<Card className="h-full">
 										<Title>Volume by Card Type</Title>
 										<BarChart
@@ -24,10 +24,10 @@ export function ReportGrid() {
 												yAxisWidth={60}
 										/>
 								</Card>
-						</Col>
+						</div>
 
 						{/* Volume by Day */}
-						<Col numColSpanMd={3} numColSpanLg={3}>
+						<div className="2xl:col-span-4">
 								<Card className="h-full">
 										<Title>Volume by Day</Title>
 										<AreaChart
@@ -43,10 +43,10 @@ export function ReportGrid() {
 												yAxisWidth={60}
 										/>
 								</Card>
-						</Col>
+						</div>
 
 						{/* Summary by Card Number */}
-						<Col numColSpanMd={4} numColSpanLg={4}>
+						<div className="col-span-1 2xl:col-span-6">
 								<Card>
 										<Title>Summary by Card Number</Title>
 										<Table className="mt-5">
@@ -70,7 +70,7 @@ export function ReportGrid() {
 												</TableBody>
 										</Table>
 								</Card>
-						</Col>
-				</Grid>
+						</div>
+				</div>
 		);
 }

@@ -20,20 +20,20 @@ function App() {
 		<Layout 
 			sidebar={<Sidebar />}
 			mainContent={
-					<>
-							<div className="grid grid-cols-4 gap-4">
-									<div className="col-span-1">
-											<ResultsSummary />
-									</div>
-									<div className="col-span-3">
-											<TransactionTabs />
-									</div>
-							</div>
-							<ReportGrid />
-					</>
+				<>
+					<div className="grid grid-cols-1 2xl:grid-cols-6 gap-4">
+						<div className="2xl:col-span-2">
+							<ResultsSummary />
+						</div>
+						<div className="2xl:col-span-4">
+							<TransactionTabs />
+						</div>
+					</div>
+					<ReportGrid />
+				</>
 			}
-	/>
+		/>
 	);
 }
 
-export default App
+export default App;
