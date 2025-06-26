@@ -1,4 +1,10 @@
-import type { ProcessResult, RejectedTransaction } from '../types';
+import type { 
+	ProcessResult,
+	RejectedTransaction,
+	CardTypeSummary,
+	DailySummary,
+	CardSummary
+} from '../types';
 
 const API_URL = 'http://localhost:5001/api';
 
@@ -32,5 +38,29 @@ export async function getRejectedTransactions(apiKey: string): Promise<RejectedT
 			throw new Error('Failed to fetch rejected transactions.');
 	}
 
+	return response.json();
+}
+
+export async function getCardTypeReport(apiKey: string): Promise<CardTypeSummary[]> {
+	const response = await fetch(`${API_URL}/reporting/summary-by-card-type`, {
+			headers: { 'x-api-key': apiKey },
+	});
+	if (!response.ok) throw new Error('Failed to fetch card type summary.');
+	return response.json();
+}
+
+export async function getDailyReport(apiKey: string): Promise<DailySummary[]> {
+	const response = await fetch(`${API_URL}/reporting/summary-by-day`, {
+			headers: { 'x-api-key': apiKey },
+	});
+	if (!response.ok) throw new Error('Failed to fetch daily summary.');
+	return response.json();
+}
+
+export async function getCardReport(apiKey: string): Promise<CardSummary[]> {
+	const response = await fetch(`${API_URL}/reporting/summary-by-card`, {
+			headers: { 'x-api-key': apiKey },
+	});
+	if (!response.ok) throw new Error('Failed to fetch card summary.');
 	return response.json();
 }

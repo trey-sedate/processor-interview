@@ -106,3 +106,52 @@ function validateRecord(record: ParsedRecord): { cardType: CardType | null; reje
 		default: return { cardType: null, rejectionReason: 'Unrecognized card type' };
 	}
 }
+
+export async function getCardTypeSummary() {
+	const summary = await prisma.transaction.groupBy({
+			by: ['cardType'],
+			_sum: { amount: true },
+			_count: { id: true },
+			orderBy: { cardType: 'asc' }
+	});
+	// The default Decimal type from Prisma is not directly serializable, so we map it.
+	return summary.map(item => ({
+			cardType: item.cardType,
+			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+			transactionCount: item._count.id
+	}));
+}
+
+export async function getDailySummary() {
+	const dailySummary: { day: string, totalVolume: number, transactionCount: number }[] = await prisma.$queryRaw`
+		SELECT timestamp as day, SUM(amount) as totalVolume, COUNT(id) as transactionCount
+		FROM "Transaction"
+		GROUP BY day
+		ORDER BY day ASC
+	`;
+	// BigInts and other numeric types from raw queries must be converted for JSON serialization.
+	return dailySummary.map(d => ({
+		day: d.day,
+		totalVolume: Number(d.totalVolume || 0),
+		transactionCount: Number(d.transactionCount || 0)
+	}));
+}
+
+export async function getCardSummary() {
+	const summary = await prisma.transaction.groupBy({
+			by: ['cardNumber', 'cardType'],
+			_sum: { amount: true },
+			_count: { id: true },
+			orderBy: {
+					_sum: {
+							amount: 'desc'
+					}
+			}
+	});
+	return summary.map(item => ({
+			cardNumber: item.cardNumber,
+			cardType: item.cardType,
+			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+			transactionCount: item._count.id
+	}));
+}

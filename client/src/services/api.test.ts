@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { processFile, getRejectedTransactions } from './api';
+import { processFile, getRejectedTransactions, getCardTypeReport, getDailyReport, getCardReport } from './api';
 
 global.fetch = vi.fn();
 
@@ -39,5 +39,24 @@ describe('api service', () => {
 				'http://localhost:5001/api/reporting/rejected-transactions',
 				expect.anything()
 		);
+	});
+
+
+	it('getCardTypeReport should call the correct endpoint', async () => {
+		(fetch as vi.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+		await getCardTypeReport('test-key');
+		expect(fetch).toHaveBeenCalledWith('http://localhost:5001/api/reporting/summary-by-card-type', expect.anything());
+	});
+
+	it('getDailyReport should call the correct endpoint', async () => {
+		(fetch as vi.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+		await getDailyReport('test-key');
+		expect(fetch).toHaveBeenCalledWith('http://localhost:5001/api/reporting/summary-by-day', expect.anything());
+	});
+
+	it('getCardReport should call the correct endpoint', async () => {
+		(fetch as vi.Mock).mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+		await getCardReport('test-key');
+		expect(fetch).toHaveBeenCalledWith('http://localhost:5001/api/reporting/summary-by-card', expect.anything());
 	});
 });

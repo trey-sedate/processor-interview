@@ -43,3 +43,30 @@ export const getRejectedTransactions = async (req: Request, res: Response): Prom
 			res.status(500).json({ message: 'Failed to retrieve rejected transactions.', error: (error as Error).message });
 	}
 };
+
+export const getSummaryByCardType = async (req: Request, res: Response): Promise<void> => {
+	try {
+			const summary = await TransactionService.getCardTypeSummary();
+			res.status(200).json(summary);
+	} catch (error) {
+			res.status(500).json({ message: 'Failed to retrieve summary by card type.', error: (error as Error).message });
+	}
+};
+
+export const getSummaryByDay = async (req: Request, res: Response): Promise<void> => {
+	try {
+			const summary = await TransactionService.getDailySummary();
+			res.status(200).json(summary);
+	} catch (error) {
+			res.status(500).json({ message: 'Failed to retrieve summary by day.', error: (error as Error).message });
+	}
+};
+
+export const getSummaryByCard = async (req: Request, res: Response): Promise<void> => {
+	try {
+			const summary = await TransactionService.getCardSummary();
+			res.status(200).json(summary);
+	} catch (error) {
+			res.status(500).json({ message: 'Failed to retrieve summary by card.', error: (error as Error).message });
+	}
+};
