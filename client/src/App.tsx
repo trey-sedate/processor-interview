@@ -20,13 +20,19 @@ function App() {
 		<Layout 
 			sidebar={<Sidebar />}
 			mainContent={
-				<>
-						<ResultsSummary />
-						<ReportGrid />
-						<TransactionTabs />
-				</>
+					<>
+							<div className="grid grid-cols-4 gap-4">
+									<div className="col-span-1">
+											<ResultsSummary />
+									</div>
+									<div className="col-span-3">
+											<TransactionTabs />
+									</div>
+							</div>
+							<ReportGrid />
+					</>
 			}
-		/>
+	/>
 	);
 }
 
