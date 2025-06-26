@@ -1,23 +1,23 @@
-import { parseCsvContent } from '../parsers/csv.parser'
-import { parseJsonContent } from '../parsers/json.parser'
-import { parseXmlContent } from '../parsers/xml.parser'
+import { parseCsvContent } from '../parsers/csv.parser';
+import { parseJsonContent } from '../parsers/json.parser';
+import { parseXmlContent } from '../parsers/xml.parser';
 
 describe('File Parsers', () => {
-
 	// --- CSV Parser Tests ---
 	describe('parseCsvContent', () => {
 		it('should correctly parse valid CSV content with multiple lines', () => {
-			const csvContent = 'cardNumber,timestamp,amount\n4242,2025-01-01T00:00:00Z,100.50\n5555,2025-01-02T12:30:00Z,-25.00';
+			const csvContent =
+				'cardNumber,timestamp,amount\n4242,2025-01-01T00:00:00Z,100.50\n5555,2025-01-02T12:30:00Z,-25.00';
 			const result = parseCsvContent(csvContent);
 
 			expect(result).toHaveLength(2);
 			expect(result[0]).toEqual({
 				cardNumber: '4242',
 				timestamp: '2025-01-01T00:00:00Z',
-				amount: 100.50,
-				originalRecord: '4242,2025-01-01T00:00:00Z,100.50'
+				amount: 100.5,
+				originalRecord: '4242,2025-01-01T00:00:00Z,100.50',
 			});
-			expect(result[1].amount).toBe(-25.00);
+			expect(result[1].amount).toBe(-25.0);
 		});
 
 		it('should return an empty array for an empty string', () => {
@@ -29,19 +29,22 @@ describe('File Parsers', () => {
 		});
 
 		it('should handle CSV content with blank lines', () => {
-			const csvContent = 'cardNumber,timestamp,amount\n\n4242,2025-01-01T00:00:00Z,100.50\n';
+			const csvContent =
+				'cardNumber,timestamp,amount\n\n4242,2025-01-01T00:00:00Z,100.50\n';
 			const result = parseCsvContent(csvContent);
 			expect(result).toHaveLength(1);
 		});
 
 		it('should handle Windows-style line endings (\\r\\n)', () => {
-			const csvContent = 'cardNumber,timestamp,amount\r\n4242,2025-01-01T00:00:00Z,100.50\r\n';
-			 const result = parseCsvContent(csvContent);
+			const csvContent =
+				'cardNumber,timestamp,amount\r\n4242,2025-01-01T00:00:00Z,100.50\r\n';
+			const result = parseCsvContent(csvContent);
 			expect(result).toHaveLength(1);
 		});
 
 		it('should produce NaN for amount if it is not a number', () => {
-			const csvContent = 'cardNumber,timestamp,amount\n4242,2025-01-01T00:00:00Z,invalid-amount';
+			const csvContent =
+				'cardNumber,timestamp,amount\n4242,2025-01-01T00:00:00Z,invalid-amount';
 			const result = parseCsvContent(csvContent);
 			expect(result).toHaveLength(1);
 			expect(result[0].amount).toBeNaN();
@@ -51,15 +54,17 @@ describe('File Parsers', () => {
 	// --- JSON Parser Tests ---
 	describe('parseJsonContent', () => {
 		it('should correctly parse valid JSON content', () => {
-			const jsonContent = '[{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}]';
+			const jsonContent =
+				'[{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}]';
 			const result = parseJsonContent(jsonContent);
-			
+
 			expect(result).toHaveLength(1);
 			expect(result[0]).toEqual({
 				cardNumber: '5555',
 				timestamp: '2025-01-02T12:00:00Z',
 				amount: -50,
-				originalRecord: '{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}'
+				originalRecord:
+					'{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}',
 			});
 		});
 
@@ -71,14 +76,18 @@ describe('File Parsers', () => {
 			const malformedJson = '[{"cardNumber":]';
 			expect(() => parseJsonContent(malformedJson)).toThrow();
 		});
-		
+
 		it('should throw an error if the top-level structure is not an array', () => {
-			const nonArrayJson = '{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}';
-			expect(() => parseJsonContent(nonArrayJson)).toThrow('JSON data is not an array of transactions');
+			const nonArrayJson =
+				'{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z","amount":-50}';
+			expect(() => parseJsonContent(nonArrayJson)).toThrow(
+				'JSON data is not an array of transactions',
+			);
 		});
 
 		it('should handle objects with missing keys by passing them as undefined', () => {
-			const jsonWithMissingKey = '[{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z"}]';
+			const jsonWithMissingKey =
+				'[{"cardNumber":"5555","timestamp":"2025-01-02T12:00:00Z"}]';
 			const result = parseJsonContent(jsonWithMissingKey);
 			expect(result).toHaveLength(1);
 			// The parser should pass it through; downstream validation will catch it.
@@ -111,7 +120,7 @@ describe('File Parsers', () => {
 		});
 
 		it('should correctly parse valid XML with a single transaction', async () => {
-				const xmlContent = `
+			const xmlContent = `
 				<transactions>
 					<transaction>
 						<cardNumber>3333</cardNumber>

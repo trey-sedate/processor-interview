@@ -1,4 +1,9 @@
-import { PrismaClient, CardType, Transaction, RejectedTransaction } from '@prisma/client';
+import {
+	PrismaClient,
+	CardType,
+	Transaction,
+	RejectedTransaction,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { ProcessResult, ParsedRecord } from '../types/transaction.types';
 import { parseCsvContent } from '../parsers/csv.parser';
@@ -14,20 +19,23 @@ export async function resetData() {
 
 export async function getRejected() {
 	return prisma.rejectedTransaction.findMany({
-			orderBy: { processedAt: 'desc' }
+		orderBy: { processedAt: 'desc' },
 	});
 }
 
-export async function processUploadedFile(file: Express.Multer.File, skipLuhn: boolean): Promise<ProcessResult> {
+export async function processUploadedFile(
+	file: Express.Multer.File,
+	skipLuhn: boolean,
+): Promise<ProcessResult> {
 	await resetData();
 
 	const parser = getParserForMimeType(file.mimetype);
 	if (!parser) {
 		await prisma.rejectedTransaction.create({
 			data: {
-					originalRecord: `File: ${file.originalname}`,
-					rejectionReason: `Unsupported file type: ${file.mimetype}`,
-			}
+				originalRecord: `File: ${file.originalname}`,
+				rejectionReason: `Unsupported file type: ${file.mimetype}`,
+			},
 		});
 		return { processed: 0, rejected: 1 };
 	}
@@ -62,7 +70,7 @@ export async function processUploadedFile(file: Express.Multer.File, skipLuhn: b
 			data: {
 				originalRecord: `File: ${file.originalname}`,
 				rejectionReason: `Failed to parse file: ${(e as Error).message}`,
-			}
+			},
 		});
 		return { processed: 0, rejected: 1 };
 	}
@@ -71,13 +79,15 @@ export async function processUploadedFile(file: Express.Multer.File, skipLuhn: b
 		await prisma.transaction.createMany({ data: allValidTransactions });
 	}
 	if (allRejectedTransactions.length > 0) {
-		await prisma.rejectedTransaction.createMany({ data: allRejectedTransactions });
+		await prisma.rejectedTransaction.createMany({
+			data: allRejectedTransactions,
+		});
 	}
 
 	return {
 		processed: allValidTransactions.length,
-		rejected: allRejectedTransactions.length
-	}
+		rejected: allRejectedTransactions.length,
+	};
 }
 
 function getParserForMimeType(mimeType: string) {
@@ -97,91 +107,104 @@ function getParserForMimeType(mimeType: string) {
 // Luhn algorithm implementation for credit card validation
 function isValidLuhn(cardNumber: string): boolean {
 	if (!/^\d+$/.test(cardNumber)) {
-			return false; // Not a string of digits
+		return false; // Not a string of digits
 	}
 
 	let sum = 0;
 	let shouldDouble = false;
 	for (let i = cardNumber.length - 1; i >= 0; i--) {
-			let digit = parseInt(cardNumber.charAt(i), 10);
+		let digit = parseInt(cardNumber.charAt(i), 10);
 
-			if (shouldDouble) {
-					digit *= 2;
-					if (digit > 9) {
-							digit -= 9;
-					}
+		if (shouldDouble) {
+			digit *= 2;
+			if (digit > 9) {
+				digit -= 9;
 			}
-			sum += digit;
-			shouldDouble = !shouldDouble;
+		}
+		sum += digit;
+		shouldDouble = !shouldDouble;
 	}
 	return sum % 10 === 0;
 }
 
-
-function validateRecord(record: ParsedRecord, skipLuhn: boolean): { cardType: CardType | null; rejectionReason: string | null } {
+function validateRecord(
+	record: ParsedRecord,
+	skipLuhn: boolean,
+): { cardType: CardType | null; rejectionReason: string | null } {
 	if (!record.cardNumber || !record.timestamp || isNaN(record.amount)) {
-		return { cardType: null, rejectionReason: 'Malformed record (missing fields or invalid amount)' };
+		return {
+			cardType: null,
+			rejectionReason: 'Malformed record (missing fields or invalid amount)',
+		};
 	}
 
 	if (!skipLuhn && !isValidLuhn(record.cardNumber)) {
-		return { cardType: null, rejectionReason: 'Invalid card number (Luhn check failed)' };
+		return {
+			cardType: null,
+			rejectionReason: 'Invalid card number (Luhn check failed)',
+		};
 	}
 
 	const firstDigit = record.cardNumber.charAt(0);
 	switch (firstDigit) {
-		case '3': return { cardType: CardType.AMEX, rejectionReason: null };
-		case '4': return { cardType: CardType.VISA, rejectionReason: null };
-		case '5': return { cardType: CardType.MASTERCARD, rejectionReason: null };
-		case '6': return { cardType: CardType.DISCOVER, rejectionReason: null };
-		default: return { cardType: null, rejectionReason: 'Unrecognized card type' };
+		case '3':
+			return { cardType: CardType.AMEX, rejectionReason: null };
+		case '4':
+			return { cardType: CardType.VISA, rejectionReason: null };
+		case '5':
+			return { cardType: CardType.MASTERCARD, rejectionReason: null };
+		case '6':
+			return { cardType: CardType.DISCOVER, rejectionReason: null };
+		default:
+			return { cardType: null, rejectionReason: 'Unrecognized card type' };
 	}
 }
 
 export async function getCardTypeSummary() {
 	const summary = await prisma.transaction.groupBy({
-			by: ['cardType'],
-			_sum: { amount: true },
-			_count: { id: true },
-			orderBy: { cardType: 'asc' }
+		by: ['cardType'],
+		_sum: { amount: true },
+		_count: { id: true },
+		orderBy: { cardType: 'asc' },
 	});
 	// The default Decimal type from Prisma is not directly serializable, so we map it.
-	return summary.map(item => ({
-			cardType: item.cardType,
-			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
-			transactionCount: item._count.id
+	return summary.map((item) => ({
+		cardType: item.cardType,
+		totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+		transactionCount: item._count.id,
 	}));
 }
 
 export async function getDailySummary() {
 	const summary = await prisma.transaction.groupBy({
-			by: ['day'],
-			_sum: { amount: true },
-			_count: { id: true },
-			orderBy: { day: 'asc' }
+		by: ['day'],
+		_sum: { amount: true },
+		_count: { id: true },
+		orderBy: { day: 'asc' },
 	});
-	
-	return summary.map(item => ({
-			day: item.day,
-			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
-			transactionCount: item._count.id
+
+	return summary.map((item) => ({
+		day: item.day,
+		totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+		transactionCount: item._count.id,
 	}));
 }
 
 export async function getCardSummary() {
 	const summary = await prisma.transaction.groupBy({
-			by: ['cardNumber', 'cardType'],
-			_sum: { amount: true },
-			_count: { id: true },
-			orderBy: {
-					_sum: {
-							amount: 'desc'
-					}
-			}
+		by: ['cardNumber', 'cardType'],
+		_sum: { amount: true },
+		_count: { id: true },
+		orderBy: {
+			_sum: {
+				amount: 'desc',
+			},
+		},
 	});
-	return summary.map(item => ({
-			cardNumber: item.cardNumber,
-			cardType: item.cardType,
-			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
-			transactionCount: item._count.id
+	return summary.map((item) => ({
+		cardNumber: item.cardNumber,
+		cardType: item.cardType,
+		totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+		transactionCount: item._count.id,
 	}));
 }

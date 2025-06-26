@@ -11,9 +11,7 @@ export function Layout({ sidebar, mainContent }: LayoutProps) {
 			<aside className="w-80 border-r border-slate-200 bg-white p-6">
 				{sidebar}
 			</aside>
-			<main className="flex-1 p-6 sm:p-10">
-				{mainContent}
-			</main>
+			<main className="flex-1 p-6 sm:p-10">{mainContent}</main>
 		</div>
 	);
 }

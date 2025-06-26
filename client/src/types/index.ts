@@ -11,22 +11,22 @@ export interface ProcessResult {
 }
 
 export interface CardTypeSummary {
-  cardType: string;
-  totalVolume: number;
-  transactionCount: number;
+	cardType: string;
+	totalVolume: number;
+	transactionCount: number;
 }
 
 export interface DailySummary {
-  day: string;
-  totalVolume: number;
-  transactionCount: number;
+	day: string;
+	totalVolume: number;
+	transactionCount: number;
 }
 
 export interface CardSummary {
-  cardNumber: string;
-  cardType: string;
-  totalVolume: number;
-  transactionCount: number;
+	cardNumber: string;
+	cardType: string;
+	totalVolume: number;
+	transactionCount: number;
 }
 export interface AppState {
 	isLoading: boolean;

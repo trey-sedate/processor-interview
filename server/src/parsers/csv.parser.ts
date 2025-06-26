@@ -5,9 +5,14 @@ export function parseCsvContent(content: string): ParsedRecord[] {
 	const records: ParsedRecord[] = [];
 
 	for (const line of lines) {
-			if (line.trim() === '') continue;
-			const [cardNumber, timestamp, amount] = line.trim().split(',');
-			records.push({ cardNumber, timestamp, amount: parseFloat(amount), originalRecord: line });
+		if (line.trim() === '') continue;
+		const [cardNumber, timestamp, amount] = line.trim().split(',');
+		records.push({
+			cardNumber,
+			timestamp,
+			amount: parseFloat(amount),
+			originalRecord: line,
+		});
 	}
 
 	return records;

@@ -11,12 +11,22 @@ describe('TransactionTabs', () => {
 	});
 
 	it('should display the rejected transactions table when data is available', () => {
-		useTransactionStore.setState({ 
-				processResult: { processed: 8, rejected: 2 },
-				rejectedTransactions: [
-						{ id: 1, originalRecord: 'a,b,c', rejectionReason: 'Bad card', processedAt: '' },
-						{ id: 2, originalRecord: 'd,e,f', rejectionReason: 'Bad date', processedAt: '' },
-				]
+		useTransactionStore.setState({
+			processResult: { processed: 8, rejected: 2 },
+			rejectedTransactions: [
+				{
+					id: 1,
+					originalRecord: 'a,b,c',
+					rejectionReason: 'Bad card',
+					processedAt: '',
+				},
+				{
+					id: 2,
+					originalRecord: 'd,e,f',
+					rejectionReason: 'Bad date',
+					processedAt: '',
+				},
+			],
 		});
 		render(<TransactionTabs />);
 

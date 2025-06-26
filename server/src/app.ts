@@ -19,10 +19,10 @@ app.use((err: any, req: Request, res: Response, next: NextFunction): void => {
 
 	if (err instanceof multer.MulterError) {
 		res.status(400).json({ message: `File upload error: ${err.message}` });
-		return
+		return;
 	}
 
 	next(err);
 });
 
-export { app } 
+export { app };

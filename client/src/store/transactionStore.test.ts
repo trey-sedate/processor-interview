@@ -4,9 +4,9 @@ import { useTransactionStore } from './transactionStore';
 describe('useTransactionStore', () => {
 	beforeEach(() => {
 		useTransactionStore.setState({
-				isLoading: false,
-				error: null,
-				processResult: null,
+			isLoading: false,
+			error: null,
+			processResult: null,
 		});
 	});
 
@@ -27,8 +27,17 @@ describe('useTransactionStore', () => {
 	});
 
 	it('should set rejected transactions', () => {
-		const mockRejected = [{ id: 1, originalRecord: 'a,b,c', rejectionReason: 'test', processedAt: '' }];
+		const mockRejected = [
+			{
+				id: 1,
+				originalRecord: 'a,b,c',
+				rejectionReason: 'test',
+				processedAt: '',
+			},
+		];
 		useTransactionStore.getState().setRejectedTransactions(mockRejected);
-		expect(useTransactionStore.getState().rejectedTransactions).toEqual(mockRejected);
+		expect(useTransactionStore.getState().rejectedTransactions).toEqual(
+			mockRejected,
+		);
 	});
 });
