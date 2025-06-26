@@ -31,7 +31,8 @@ export const resetDatabase = async (req: Request, res: Response): Promise<void> 
 			await TransactionService.resetData();
 			res.status(200).json({ message: 'Database reset successfully.' });
 	} catch (error) {
-			res.status(500).json({ message: 'Failed to reset database.', error: (error as Error).message });
+			console.log("Error resetting database:", (error as Error).message);
+			res.status(500).json({ message: 'Failed to reset database.' });
 	}
 };
 
@@ -40,7 +41,8 @@ export const getRejectedTransactions = async (req: Request, res: Response): Prom
 			const rejected = await TransactionService.getRejected();
 			res.status(200).json(rejected);
 	} catch (error) {
-			res.status(500).json({ message: 'Failed to retrieve rejected transactions.', error: (error as Error).message });
+			console.log("Error retrieving rejected transactions:", (error as Error).message);
+			res.status(500).json({ message: 'Failed to retrieve rejected transactions.' });
 	}
 };
 
@@ -49,7 +51,8 @@ export const getSummaryByCardType = async (req: Request, res: Response): Promise
 			const summary = await TransactionService.getCardTypeSummary();
 			res.status(200).json(summary);
 	} catch (error) {
-			res.status(500).json({ message: 'Failed to retrieve summary by card type.', error: (error as Error).message });
+			console.log("Error retrieving summary by card type:", (error as Error).message);
+			res.status(500).json({ message: 'Failed to retrieve summary by card type.' });
 	}
 };
 
@@ -58,7 +61,8 @@ export const getSummaryByDay = async (req: Request, res: Response): Promise<void
 			const summary = await TransactionService.getDailySummary();
 			res.status(200).json(summary);
 	} catch (error) {
-			res.status(500).json({ message: 'Failed to retrieve summary by day.', error: (error as Error).message });
+			console.log("Error retrieving summary by day:", (error as Error).message);
+			res.status(500).json({ message: 'Failed to retrieve summary by day.' });
 	}
 };
 
@@ -67,6 +71,7 @@ export const getSummaryByCard = async (req: Request, res: Response): Promise<voi
 			const summary = await TransactionService.getCardSummary();
 			res.status(200).json(summary);
 	} catch (error) {
-			res.status(500).json({ message: 'Failed to retrieve summary by card.', error: (error as Error).message });
+			console.log("Error retrieving summary by card:", (error as Error).message);
+			res.status(500).json({ message: 'Failed to retrieve summary by card.' });
 	}
 };
