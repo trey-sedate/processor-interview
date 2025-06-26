@@ -99,3 +99,7 @@ The client will be running on **http://localhost:5173** and will open automatica
 - **Single File Processing:** The UI is designed to process one file at a time. The results of a new file upload will overwrite the previous results. The application does not currently support aggregating data from multiple separate uploads.
 
 - **No User Authentication:** The application does not have a user login system. It uses a simple secret API key to protect the API endpoints, which is appropriate for its scope.
+
+- **Luhn Validation Toggle:** The UI includes a checkbox to "Skip Luhn Validation." This provides flexibility for testing with malformed data but should be disabled in a production environment.
+
+- **File Size Limit:** There is a hardcoded 5MB limit for uploaded files. This is a stability and security measure to prevent denial-of-service attacks from excessively large files.
