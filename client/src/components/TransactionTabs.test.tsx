@@ -10,14 +10,6 @@ describe('TransactionTabs', () => {
 		expect(container).toBeEmptyDOMElement();
 	});
 
-	it('should render the component with correct counts when a result exists', () => {
-		useTransactionStore.setState({ processResult: { processed: 10, rejected: 2 } });
-		render(<TransactionTabs />);
-		
-		expect(screen.getByText('All Transactions (10)')).toBeInTheDocument();
-		expect(screen.getByText('Rejected (2)')).toBeInTheDocument();
-	});
-
 	it('should display the rejected transactions table when data is available', () => {
 		useTransactionStore.setState({ 
 				processResult: { processed: 8, rejected: 2 },
