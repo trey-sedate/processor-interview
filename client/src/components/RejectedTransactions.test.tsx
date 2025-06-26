@@ -30,8 +30,6 @@ describe('RejectedTransactions', () => {
 		});
 		render(<RejectedTransactions />);
 
-		// Vitest doesn't automatically switch tabs, so we check the content of the default panel
-		// A more advanced test could simulate a click.
 		expect(screen.getByText('Bad card')).toBeInTheDocument();
 		expect(screen.getByText('Bad date')).toBeInTheDocument();
 	});
