@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Sidebar } from './components/Sidebar';
 import { ResultsSummary } from './components/ResultsSummary';
-import { TransactionTabs } from './components/TransactionTabs';
+import { RejectedTransactions } from './components/RejectedTransactions';
 import { ReportGrid } from './components/ReportGrid';
 import { useTransactionStore } from './store/transactionStore';
 
@@ -38,9 +38,9 @@ function App() {
 							</div>
 						</div>
 
-						{/* TransactionTabs */}
+						{/* RejectedTransactions */}
 						<div className="mt-6">
-							<TransactionTabs />
+							<RejectedTransactions />
 						</div>
 					</>
 				)

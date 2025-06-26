@@ -12,7 +12,7 @@ import {
 } from '@tremor/react';
 import { useTransactionStore } from '../store/transactionStore';
 
-export function TransactionTabs() {
+export function RejectedTransactions() {
 	const { rejectedTransactions, processResult } = useTransactionStore();
 
 	if (!processResult) {

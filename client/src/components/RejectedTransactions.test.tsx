@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { TransactionTabs } from './TransactionTabs';
+import { RejectedTransactions } from './RejectedTransactions';
 import { useTransactionStore } from '../store/transactionStore';
 
-describe('TransactionTabs', () => {
+describe('RejectedTransactions', () => {
 	it('should render nothing if processResult is null', () => {
 		useTransactionStore.setState({ processResult: null });
-		const { container } = render(<TransactionTabs />);
+		const { container } = render(<RejectedTransactions />);
 		expect(container).toBeEmptyDOMElement();
 	});
 
@@ -28,7 +28,7 @@ describe('TransactionTabs', () => {
 				},
 			],
 		});
-		render(<TransactionTabs />);
+		render(<RejectedTransactions />);
 
 		// Vitest doesn't automatically switch tabs, so we check the content of the default panel
 		// A more advanced test could simulate a click.
