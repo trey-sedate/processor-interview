@@ -1,6 +1,8 @@
 # Card Transaction Processor 
 This project is a full-stack web application that processes credit card transaction files, persists the data, and displays summary reports on a web-based dashboard. It was built as a take-home assignment to demonstrate skills in modern web development, including backend architecture, frontend UI/UX, and testing.
 
+![alt text](image.png)
+
 ## Tech Stack
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: SQLite with Prisma ORM
