@@ -94,9 +94,37 @@ function getParserForMimeType(mimeType: string) {
 	}
 }
 
+// Luhn algorithm implementation for credit card validation
+function isValidLuhn(cardNumber: string): boolean {
+	if (!/^\d+$/.test(cardNumber)) {
+			return false; // Not a string of digits
+	}
+
+	let sum = 0;
+	let shouldDouble = false;
+	for (let i = cardNumber.length - 1; i >= 0; i--) {
+			let digit = parseInt(cardNumber.charAt(i), 10);
+
+			if (shouldDouble) {
+					digit *= 2;
+					if (digit > 9) {
+							digit -= 9;
+					}
+			}
+			sum += digit;
+			shouldDouble = !shouldDouble;
+	}
+	return sum % 10 === 0;
+}
+
+
 function validateRecord(record: ParsedRecord): { cardType: CardType | null; rejectionReason: string | null } {
 	if (!record.cardNumber || !record.timestamp || isNaN(record.amount)) {
 		return { cardType: null, rejectionReason: 'Malformed record (missing fields or invalid amount)' };
+	}
+
+	if (!isValidLuhn(record.cardNumber)) {
+		return { cardType: null, rejectionReason: 'Invalid card number (Luhn check failed)' };
 	}
 
 	const firstDigit = record.cardNumber.charAt(0);
