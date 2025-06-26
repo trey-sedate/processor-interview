@@ -19,10 +19,12 @@ model Transaction {
   cardNumber String
   cardType   CardType
   timestamp  DateTime
+  day        String
   amount     Decimal
 
   @@index([cardType])
   @@index([timestamp])
+  @@index([day]) // For querying by day
 }
 
 model RejectedTransaction {

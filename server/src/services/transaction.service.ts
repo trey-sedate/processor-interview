@@ -41,11 +41,13 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 		for (const record of records) {
 			const { cardType, rejectionReason } = validateRecord(record);
 
-			if (cardType) {
+			if (cardType && !rejectionReason) {
+				const transactionDate = new Date(record.timestamp);
 				allValidTransactions.push({
 					cardNumber: record.cardNumber,
 					cardType,
 					timestamp: new Date(record.timestamp),
+					day: transactionDate.toISOString().slice(0, 10), // YYYY-MM-DD format
 					amount: new Decimal(record.amount), // new Decimal() can handle numbers directly
 				});
 			} else {
@@ -123,17 +125,17 @@ export async function getCardTypeSummary() {
 }
 
 export async function getDailySummary() {
-	const dailySummary: { day: string, totalVolume: number, transactionCount: number }[] = await prisma.$queryRaw`
-		SELECT timestamp as day, SUM(amount) as totalVolume, COUNT(id) as transactionCount
-		FROM "Transaction"
-		GROUP BY day
-		ORDER BY day ASC
-	`;
-	// BigInts and other numeric types from raw queries must be converted for JSON serialization.
-	return dailySummary.map(d => ({
-		day: d.day,
-		totalVolume: Number(d.totalVolume || 0),
-		transactionCount: Number(d.transactionCount || 0)
+	const summary = await prisma.transaction.groupBy({
+			by: ['day'],
+			_sum: { amount: true },
+			_count: { id: true },
+			orderBy: { day: 'asc' }
+	});
+	
+	return summary.map(item => ({
+			day: item.day,
+			totalVolume: item._sum.amount ? item._sum.amount.toNumber() : 0,
+			transactionCount: item._count.id
 	}));
 }
 
