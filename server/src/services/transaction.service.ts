@@ -18,7 +18,7 @@ export async function getRejected() {
 	});
 }
 
-export async function processUploadedFile(file: Express.Multer.File): Promise<ProcessResult> {
+export async function processUploadedFile(file: Express.Multer.File, skipLuhn: boolean): Promise<ProcessResult> {
 	await resetData();
 
 	const parser = getParserForMimeType(file.mimetype);
@@ -39,7 +39,7 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<Pr
 		const fileContent = file.buffer.toString('utf-8');
 		const records = await Promise.resolve(parser(fileContent));
 		for (const record of records) {
-			const { cardType, rejectionReason } = validateRecord(record);
+			const { cardType, rejectionReason } = validateRecord(record, skipLuhn);
 
 			if (cardType && !rejectionReason) {
 				const transactionDate = new Date(record.timestamp);
@@ -118,12 +118,12 @@ function isValidLuhn(cardNumber: string): boolean {
 }
 
 
-function validateRecord(record: ParsedRecord): { cardType: CardType | null; rejectionReason: string | null } {
+function validateRecord(record: ParsedRecord, skipLuhn: boolean): { cardType: CardType | null; rejectionReason: string | null } {
 	if (!record.cardNumber || !record.timestamp || isNaN(record.amount)) {
 		return { cardType: null, rejectionReason: 'Malformed record (missing fields or invalid amount)' };
 	}
 
-	if (!isValidLuhn(record.cardNumber)) {
+	if (!skipLuhn && !isValidLuhn(record.cardNumber)) {
 		return { cardType: null, rejectionReason: 'Invalid card number (Luhn check failed)' };
 	}
 

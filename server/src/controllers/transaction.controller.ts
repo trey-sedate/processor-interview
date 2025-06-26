@@ -9,7 +9,9 @@ export const processTransactions = async (req: Request, res: Response): Promise<
 			return;
 		}
 
-		const result = await TransactionService.processUploadedFile(file);
+		const skipLuhn = req.body.skipLuhn === 'true';
+
+		const result = await TransactionService.processUploadedFile(file, skipLuhn);
 
 		res.status(200).json({ 
 				message: 'File processed successfully.',

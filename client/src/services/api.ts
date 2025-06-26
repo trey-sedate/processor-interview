@@ -8,9 +8,10 @@ import type {
 
 const API_URL = 'http://localhost:5001/api';
 
-export async function processFile(file: File, apiKey: string): Promise<ProcessResult> {
+export async function processFile(file: File, apiKey: string, skipLuhn: boolean): Promise<ProcessResult> {
 	const formData = new FormData();
 	formData.append('transactionFile', file);
+	formData.append('skipLuhn', String(skipLuhn));
 
 	const response = await fetch(`${API_URL}/process-transactions`, {
 		method: 'POST',

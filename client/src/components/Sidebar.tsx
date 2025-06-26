@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Title, Text, Card } from '@tremor/react';
+import { Title, Text, Card, Flex } from '@tremor/react';
 import { useTransactionStore } from '../store/transactionStore';
 import * as api from '../services/api';
 
@@ -7,6 +7,7 @@ export function Sidebar() {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || '');
 	const [fileError, setFileError] = useState<string | null>(null);
+	const [skipLuhn, setSkipLuhn] = useState<boolean>(false);
 
 	const { setLoading, setError, setProcessResult, 
 		setRejectedTransactions, setCardTypeSummary, setDailySummary, setCardSummary
@@ -33,7 +34,7 @@ export function Sidebar() {
 		setRejectedTransactions([]);
 
 		try {
-			const result = await api.processFile(selectedFile, apiKey);
+			const result = await api.processFile(selectedFile, apiKey, skipLuhn);
 			setProcessResult(result);
 
 			const [cardTypeData, dailyData, cardData, rejected] = await Promise.all([
@@ -78,6 +79,22 @@ export function Sidebar() {
 						{fileError && (
 								<p className="text-sm text-red-600">{fileError}</p>
 						)}
+
+						<Flex className="border-t pt-4 mt-4 flex items-center">
+							<div className="flex items-center">
+								<input
+										type="checkbox"
+										id="skipLuhn"
+										checked={skipLuhn}
+										onChange={(e) => setSkipLuhn(e.target.checked)}
+										className="form-checkbox"
+								/>
+								<label htmlFor="skipLuhn" className="text-sm text-slate-500 ml-2">
+										Skip Luhn Validation
+								</label>
+							</div>
+						</Flex>
+
 						<button
 								onClick={handleProcess}
 								disabled={!selectedFile || !apiKey}
